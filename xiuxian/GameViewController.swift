@@ -14,30 +14,25 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Load 'GameScene.sks' as a GKScene. This provides gameplay related content
-        // including entities and graphs.
-        if let scene = GKScene(fileNamed: "GameScene") {
+        // 直接创建GameScene实例，而不是从.sks文件加载
+        let scene = GameScene()
+        
+        // 获取视图
+        if let view = self.view as! SKView? {
+            // 设置场景大小为视图大小
+            scene.size = view.bounds.size
             
-            // Get the SKScene from the loaded GKScene
-            if let sceneNode = scene.rootNode as! GameScene? {
-                
-                // Copy gameplay related content over to the scene
-                sceneNode.entities = scene.entities
-                sceneNode.graphs = scene.graphs
-                
-                // Set the scale mode to scale to fit the window
-                sceneNode.scaleMode = .aspectFill
-                
-                // Present the scene
-                if let view = self.view as! SKView? {
-                    view.presentScene(sceneNode)
-                    
-                    view.ignoresSiblingOrder = true
-                    
-                    view.showsFPS = true
-                    view.showsNodeCount = true
-                }
-            }
+            // 设置缩放模式
+            scene.scaleMode = .aspectFill
+            
+            // 呈现场景
+            view.presentScene(scene)
+            
+            view.ignoresSiblingOrder = true
+            
+            // 开发时显示FPS和节点数量，发布时可以关闭
+            view.showsFPS = true
+            view.showsNodeCount = true
         }
     }
 
