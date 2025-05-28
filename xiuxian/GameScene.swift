@@ -27,9 +27,14 @@ class GameScene: SKScene {
     override func sceneDidLoad() {
         self.lastUpdateTime = 0
         
+        // 调试输出场景信息
+        print("🎮 场景大小: \(size.width) x \(size.height)")
+        print("🎮 开始加载游戏UI...")
+        
         // 设置修仙风格的渐变背景
         setupBackground()
         
+        // 恢复主要游戏UI
         setupUI()
         setupButtons()
         
@@ -43,23 +48,24 @@ class GameScene: SKScene {
         // 创建深蓝到紫色的渐变背景
         backgroundColor = SKColor(red: 0.05, green: 0.05, blue: 0.15, alpha: 1.0)
         
-        // 添加少量星空效果，不干扰UI
-        for _ in 0..<20 {
-            let star = SKShapeNode(circleOfRadius: CGFloat.random(in: 0.5...1.0))
-            star.fillColor = SKColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat.random(in: 0.3...0.6))
+        // 添加星空效果
+        for _ in 0..<30 {
+            let star = SKShapeNode(circleOfRadius: CGFloat.random(in: 0.5...1.2))
+            star.fillColor = SKColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat.random(in: 0.3...0.7))
             star.strokeColor = SKColor.clear
             star.position = CGPoint(
                 x: CGFloat.random(in: 0...size.width),
                 y: CGFloat.random(in: 0...size.height)
             )
-            star.zPosition = -100 // 确保在最后面
+            star.zPosition = -10
             addChild(star)
             
             // 添加缓慢的闪烁动画
-            let fadeOut = SKAction.fadeAlpha(to: 0.1, duration: Double.random(in: 2.0...4.0))
-            let fadeIn = SKAction.fadeAlpha(to: 0.6, duration: Double.random(in: 2.0...4.0))
+            let fadeOut = SKAction.fadeAlpha(to: 0.2, duration: Double.random(in: 2.0...4.0))
+            let fadeIn = SKAction.fadeAlpha(to: 0.7, duration: Double.random(in: 2.0...4.0))
             let twinkle = SKAction.sequence([fadeOut, fadeIn])
-            star.run(SKAction.repeatForever(twinkle))
+            let repeatTwinkle = SKAction.repeatForever(twinkle)
+            star.run(repeatTwinkle)
         }
     }
     
@@ -67,107 +73,106 @@ class GameScene: SKScene {
     
     private func setupUI() {
         // 使用固定的安全区域值，确保在所有设备上都能正确显示
-        let safeAreaTop: CGFloat = 60  // 为刘海屏预留空间
+        let safeAreaTop: CGFloat = 80  // 为刘海屏和状态栏预留空间
         let safeAreaBottom: CGFloat = 40  // 为home indicator预留空间
         
-        // 标题
+        // 标题 - 在屏幕顶部
         titleLabel = SKLabelNode(text: "修仙战旗")
         titleLabel?.fontName = "PingFangSC-Bold"
-        titleLabel?.fontSize = 32
+        titleLabel?.fontSize = 36
         titleLabel?.fontColor = SKColor(red: 1.0, green: 0.8, blue: 0.4, alpha: 1.0) // 金色
-        titleLabel?.position = CGPoint(x: size.width / 2, y: size.height - safeAreaTop - 20)
+        titleLabel?.position = CGPoint(x: size.width / 2, y: size.height - safeAreaTop)
         titleLabel?.zPosition = 10
         if let titleLabel = titleLabel {
             addChild(titleLabel)
+            print("📍 标题位置: \(titleLabel.position)")
         }
         
-        // 玩家信息
+        // 玩家信息 - 在标题下方
         playerInfoLabel = SKLabelNode(text: "加载中...")
         playerInfoLabel?.fontName = "PingFangSC-Regular"
         playerInfoLabel?.fontSize = 16
-        playerInfoLabel?.fontColor = SKColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
-        playerInfoLabel?.numberOfLines = 0
-        playerInfoLabel?.preferredMaxLayoutWidth = size.width - 40
-        playerInfoLabel?.position = CGPoint(x: size.width / 2, y: size.height - safeAreaTop - 80)
-        playerInfoLabel?.horizontalAlignmentMode = .center
-        playerInfoLabel?.verticalAlignmentMode = .top
+        playerInfoLabel?.fontColor = SKColor(red: 0.9, green: 0.9, blue: 1.0, alpha: 1.0) // 淡蓝色
+        playerInfoLabel?.position = CGPoint(x: size.width / 2, y: size.height - safeAreaTop - 60)
         playerInfoLabel?.zPosition = 10
         if let playerInfoLabel = playerInfoLabel {
             addChild(playerInfoLabel)
+            print("📍 玩家信息位置: \(playerInfoLabel.position)")
         }
         
-        // 调试信息
-        debugInfoLabel = SKLabelNode(text: "")
+        // 调试信息 - 在左下角
+        debugInfoLabel = SKLabelNode()
         debugInfoLabel?.fontName = "PingFangSC-Regular"
         debugInfoLabel?.fontSize = 12
-        debugInfoLabel?.fontColor = SKColor(red: 1.0, green: 1.0, blue: 0.4, alpha: 0.8)
-        debugInfoLabel?.numberOfLines = 0
-        debugInfoLabel?.preferredMaxLayoutWidth = size.width - 40
-        debugInfoLabel?.position = CGPoint(x: 20, y: safeAreaBottom + 20)
+        debugInfoLabel?.fontColor = SKColor(red: 0.7, green: 0.7, blue: 0.7, alpha: 1.0) // 灰色
         debugInfoLabel?.horizontalAlignmentMode = .left
-        debugInfoLabel?.verticalAlignmentMode = .bottom
+        debugInfoLabel?.position = CGPoint(x: 20, y: safeAreaBottom + 20)
         debugInfoLabel?.zPosition = 10
         if let debugInfoLabel = debugInfoLabel {
             addChild(debugInfoLabel)
+            print("📍 调试信息位置: \(debugInfoLabel.position)")
         }
     }
     
     private func setupButtons() {
         // 使用固定的安全区域值
-        let safeAreaTop: CGFloat = 60
+        let safeAreaTop: CGFloat = 80
         let safeAreaBottom: CGFloat = 40
         
-        // 计算按钮区域 - 从屏幕中央开始布局
-        let buttonAreaTop = size.height / 2 + 120
-        let buttonAreaBottom = size.height / 2 - 160
-        let buttonAreaHeight = buttonAreaTop - buttonAreaBottom
-        let buttonSpacing = buttonAreaHeight / 5 // 5个按钮之间的间距
+        // 计算按钮区域 - 在屏幕中央区域
+        let buttonAreaTop = size.height - safeAreaTop - 120 // 标题和玩家信息下方
+        let buttonAreaBottom = safeAreaBottom + 80 // 调试信息上方
+        let availableHeight = buttonAreaTop - buttonAreaBottom
+        let buttonSpacing: CGFloat = availableHeight / 6 // 5个按钮，6个间距
         
         let buttonData: [(name: String, title: String, index: Int)] = [
-            ("cultivation", "开始修炼", 0),
-            ("battle", "进入秘境", 1),
-            ("inventory", "查看背包", 2),
-            ("shop", "访问商店", 3),
-            ("settings", "游戏设置", 4)
+            ("cultivation", "🧘‍♂️ 开始修炼", 0),
+            ("battle", "⚔️ 进入秘境", 1),
+            ("inventory", "🎒 查看背包", 2),
+            ("shop", "🏪 访问商店", 3),
+            ("settings", "⚙️ 游戏设置", 4)
         ]
+        
+        print("🔵 按钮区域计算 - 顶部: \(buttonAreaTop), 底部: \(buttonAreaBottom), 间距: \(buttonSpacing)")
         
         for data in buttonData {
             let yPosition = buttonAreaTop - CGFloat(data.index) * buttonSpacing
-            let button = createButton(title: data.title, 
-                                    position: CGPoint(x: size.width / 2, y: yPosition),
-                                    name: data.name)
+            let button = createButton(title: data.title, position: CGPoint(x: size.width / 2, y: yPosition), name: data.name)
             buttonNodes[data.name] = button
             addChild(button)
-            
-            let titleNode = SKLabelNode(text: data.title)
-            titleNode.fontName = "PingFangSC-Medium"
-            titleNode.fontSize = 18
-            titleNode.fontColor = SKColor.white
-            titleNode.position = CGPoint(x: 0, y: -6)
-            titleNode.name = "\(data.name)_title"
-            titleNode.zPosition = 1
-            button.addChild(titleNode)
+            print("🔵 按钮 \(data.name) 位置: \(button.position)")
         }
     }
     
     private func createButton(title: String, position: CGPoint, name: String) -> SKShapeNode {
-        let button = SKShapeNode(rectOf: CGSize(width: 250, height: 50), cornerRadius: 12)
+        let button = SKShapeNode(rectOf: CGSize(width: 280, height: 50), cornerRadius: 15)
         
         // 设置按钮颜色和样式
-        button.fillColor = SKColor(red: 0.15, green: 0.35, blue: 0.65, alpha: 0.9)
+        button.fillColor = SKColor(red: 0.2, green: 0.4, blue: 0.7, alpha: 0.9)
         button.strokeColor = SKColor(red: 0.4, green: 0.6, blue: 0.9, alpha: 1.0)
         button.lineWidth = 2
         button.position = position
         button.name = name
-        button.zPosition = 5 // 确保按钮在前景
+        button.zPosition = 5
         
-        // 添加内阴影效果
-        let innerShadow = SKShapeNode(rectOf: CGSize(width: 245, height: 45), cornerRadius: 10)
-        innerShadow.fillColor = SKColor(red: 0.1, green: 0.25, blue: 0.5, alpha: 0.5)
-        innerShadow.strokeColor = SKColor.clear
-        innerShadow.position = CGPoint(x: 0, y: -1)
-        innerShadow.zPosition = -1
-        button.addChild(innerShadow)
+        // 添加按钮标题
+        let titleNode = SKLabelNode(text: title)
+        titleNode.fontName = "PingFangSC-Medium"
+        titleNode.fontSize = 18
+        titleNode.fontColor = SKColor.white
+        titleNode.position = CGPoint(x: 0, y: -6) // 垂直居中
+        titleNode.horizontalAlignmentMode = .center
+        titleNode.verticalAlignmentMode = .center
+        titleNode.zPosition = 1
+        button.addChild(titleNode)
+        
+        // 添加按钮阴影效果
+        let shadowButton = SKShapeNode(rectOf: CGSize(width: 280, height: 50), cornerRadius: 15)
+        shadowButton.fillColor = SKColor(red: 0.1, green: 0.2, blue: 0.4, alpha: 0.6)
+        shadowButton.strokeColor = SKColor.clear
+        shadowButton.position = CGPoint(x: 2, y: -2)
+        shadowButton.zPosition = -1
+        button.addChild(shadowButton)
         
         return button
     }
